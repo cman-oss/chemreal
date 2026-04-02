@@ -1,5 +1,5 @@
 import { collection, addDoc, query, where, onSnapshot, doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db } from './firebase';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 
 export interface ChemicalAnalysis {
