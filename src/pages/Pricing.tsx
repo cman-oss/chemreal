@@ -46,6 +46,13 @@ export const Pricing: React.FC = () => {
         )}
         
         <div className="text-center mb-20">
+          {user && currentTier === 'none' && (
+            <div className="mb-8 inline-block bg-accent-emerald/10 border border-accent-emerald/20 px-6 py-3 rounded-2xl">
+              <p className="text-accent-emerald font-black uppercase tracking-widest text-xs">
+                Welcome, {user.displayName || user.email}! Please select a plan to activate your node.
+              </p>
+            </div>
+          )}
           <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-6">
             Scale your <span className="text-accent-emerald">Molecular Intelligence</span>
           </h1>
