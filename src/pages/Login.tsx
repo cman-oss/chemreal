@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from '../components/Logo';
 
 export const Login: React.FC = () => {
-  const { user, signIn, signUp, login, loading } = useAuth();
+  const { user, profile, signIn, signUp, login, loading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +20,9 @@ export const Login: React.FC = () => {
   }
 
   if (user) {
+    if (profile?.tier === 'none' || !profile) {
+      return <Navigate to="/pricing" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
