@@ -396,19 +396,20 @@ export const Landing: React.FC = () => {
             <div>
               <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">Platform</h4>
               <ul className="space-y-4 text-sm font-medium text-zinc-muted">
-                <li><a href="#" className="hover:text-accent-emerald transition-colors">Radar Monitoring</a></li>
-                <li><a href="#" className="hover:text-accent-emerald transition-colors">AI Substitutions</a></li>
-                <li><a href="#" className="hover:text-accent-emerald transition-colors">Digital Passports</a></li>
-                <li><a href="#" className="hover:text-accent-emerald transition-colors">API Access</a></li>
+                <li><Link to="/radar" className="hover:text-accent-emerald transition-colors">Radar Monitoring</Link></li>
+                <li><Link to="/substitutions" className="hover:text-accent-emerald transition-colors">AI Substitutions</Link></li>
+                <li><Link to="/passports" className="hover:text-accent-emerald transition-colors">Digital Passports</Link></li>
+                <li><Link to="/api-access" className="hover:text-accent-emerald transition-colors">API Access</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">Company</h4>
               <ul className="space-y-4 text-sm font-medium text-zinc-muted">
-                <li><a href="#" className="hover:text-accent-emerald transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-accent-emerald transition-colors">Regulatory Partners</a></li>
-                <li><a href="#" className="hover:text-accent-emerald transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-accent-emerald transition-colors">Terms of Service</a></li>
+                <li><Link to="/about" className="hover:text-accent-emerald transition-colors">About Us</Link></li>
+                <li><Link to="/company" className="hover:text-accent-emerald transition-colors">Company</Link></li>
+                <li><Link to="/regulatory-partners" className="hover:text-accent-emerald transition-colors">Regulatory Partners</Link></li>
+                <li><Link to="/privacy" className="hover:text-accent-emerald transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-accent-emerald transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
