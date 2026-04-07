@@ -15,6 +15,12 @@ import { RegulatoryRadar } from './pages/Radar';
 import { Substitutions } from './pages/Substitutions';
 import { Passports } from './pages/Passports';
 import { Pricing } from './pages/Pricing';
+import { ApiAccess } from './pages/ApiAccess';
+import { About } from './pages/About';
+import { Company } from './pages/Company';
+import { RegulatoryPartners } from './pages/RegulatoryPartners';
+import { Privacy } from './pages/Privacy';
+import { Terms } from './pages/Terms';
 import { Toaster } from 'react-hot-toast';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -50,6 +56,11 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/company" element={<Company />} />
+            <Route path="/regulatory-partners" element={<RegulatoryPartners />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             
             <Route element={<Layout />}>
               <Route path="/dashboard" element={
@@ -75,6 +86,11 @@ export default function App() {
               <Route path="/passports" element={
                 <ProtectedRoute minTier="enterprise">
                   <Passports />
+                </ProtectedRoute>
+              } />
+              <Route path="/api-access" element={
+                <ProtectedRoute minTier="pro">
+                  <ApiAccess />
                 </ProtectedRoute>
               } />
             </Route>
