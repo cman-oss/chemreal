@@ -64,6 +64,7 @@ export const Landing: React.FC = () => {
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm font-bold text-zinc-muted hover:text-white transition-colors uppercase tracking-widest">Features</a>
             <a href="#stats" className="text-sm font-bold text-zinc-muted hover:text-white transition-colors uppercase tracking-widest">Impact</a>
+            <Link to="/blog" className="text-sm font-bold text-zinc-muted hover:text-white transition-colors uppercase tracking-widest">Blog</Link>
             <Link to="/pricing" className="text-sm font-bold text-zinc-muted hover:text-white transition-colors uppercase tracking-widest">Pricing</Link>
             {user ? (
               <Link 
@@ -92,6 +93,7 @@ export const Landing: React.FC = () => {
           <div className="md:hidden bg-industrial-900 border-b border-zinc-border p-6 flex flex-col gap-4">
             <a href="#features" className="text-sm font-bold text-zinc-muted uppercase tracking-widest">Features</a>
             <a href="#stats" className="text-sm font-bold text-zinc-muted uppercase tracking-widest">Impact</a>
+            <Link to="/blog" className="text-sm font-bold text-zinc-muted uppercase tracking-widest">Blog</Link>
             <Link to="/pricing" className="text-sm font-bold text-zinc-muted uppercase tracking-widest">Pricing</Link>
             <Link to="/login" className="text-sm font-bold text-white uppercase tracking-widest">Login</Link>
           </div>
@@ -400,6 +402,7 @@ export const Landing: React.FC = () => {
                 <li><Link to="/substitutions" className="hover:text-accent-emerald transition-colors">AI Substitutions</Link></li>
                 <li><Link to="/passports" className="hover:text-accent-emerald transition-colors">Digital Passports</Link></li>
                 <li><Link to="/api-access" className="hover:text-accent-emerald transition-colors">API Access</Link></li>
+                <li><Link to="/blog" className="hover:text-accent-emerald transition-colors">Blog</Link></li>
               </ul>
             </div>
             <div>
