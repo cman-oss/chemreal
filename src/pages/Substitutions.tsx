@@ -10,6 +10,7 @@ export const Substitutions: React.FC = () => {
   const location = useLocation();
   const [chemicalQuery, setChemicalQuery] = useState('');
   const [industrialUse, setIndustrialUse] = useState('');
+  const [intent, setIntent] = useState<'replacement' | 'research'>('replacement');
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<MolecularAlternative[] | null>(null);
 
@@ -18,8 +19,6 @@ export const Substitutions: React.FC = () => {
     const chemical = searchParams.get('chemical');
     if (chemical) {
       setChemicalQuery(chemical);
-      // If we have a chemical from the radar, we might not have the use yet
-      // but we can still trigger a search with a default or wait for user input
     }
   }, [location]);
 
@@ -30,8 +29,9 @@ export const Substitutions: React.FC = () => {
     setIsSearching(true);
     setResults(null);
     try {
-      // Use a default use if none provided
-      const use = industrialUse.trim() || "General Industrial Application";
+      // Prioritize application for replacement intent
+      const contextPrefix = intent === 'replacement' ? "URGENT REPLACEMENT FOR: " : "RESEARCH STUDY ON: ";
+      const use = `${contextPrefix}${industrialUse.trim() || "General Industrial Application"}`;
       const options = await getMolecularAlternatives(chemicalQuery, use);
       setResults(options);
     } catch (error) {
@@ -48,23 +48,46 @@ export const Substitutions: React.FC = () => {
           <Zap className="w-10 h-10 mr-4 text-accent-emerald emerald-glow fill-accent-emerald/20" />
           Substitution Engine
         </h1>
-        <p className="text-zinc-muted font-medium">AI-Powered Molecular Chemist: Find non-toxic, sustainable alternatives.</p>
+        <p className="text-zinc-muted font-medium">Molecular Intelligence Engine: Shifting from geometry to environmental consequences.</p>
       </header>
 
       <div className="glass-panel rounded-3xl p-8 border border-zinc-border shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-emerald to-transparent opacity-50"></div>
         
-        <form onSubmit={handleSearch} className="space-y-6 relative z-10">
+        <form onSubmit={handleSearch} className="space-y-8 relative z-10">
+          <div className="flex gap-4 p-1 bg-industrial-950 rounded-xl border border-zinc-border w-fit">
+            <button
+              type="button"
+              onClick={() => setIntent('replacement')}
+              className={cn(
+                "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all",
+                intent === 'replacement' ? "bg-accent-emerald text-industrial-950 emerald-glow" : "text-zinc-muted hover:text-white"
+              )}
+            >
+              Direct Replacement
+            </button>
+            <button
+              type="button"
+              onClick={() => setIntent('research')}
+              className={cn(
+                "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all",
+                intent === 'research' ? "bg-blue-500 text-industrial-950 shadow-[0_0_20px_rgba(59,130,246,0.3)]" : "text-zinc-muted hover:text-white"
+              )}
+            >
+              Academic Research
+            </button>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest ml-1">Restricted Chemical</label>
+              <label className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest ml-1">Focus Molecule (CAS or Name)</label>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-muted" />
                 <input
                   type="text"
                   value={chemicalQuery}
                   onChange={(e) => setChemicalQuery(e.target.value)}
-                  placeholder="e.g., Benzene, X-42, PFAS..."
+                  placeholder="e.g., Mirex, Benzene, PFAS..."
                   className="w-full bg-industrial-950 border border-zinc-border rounded-xl pl-12 pr-4 py-4 text-white placeholder-zinc-muted focus:outline-none focus:ring-2 focus:ring-accent-emerald/50 focus:border-accent-emerald transition-all font-medium"
                   disabled={isSearching}
                 />
@@ -72,16 +95,17 @@ export const Substitutions: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest ml-1">Industrial Application</label>
+              <label className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest ml-1">Functional Application (Critical)</label>
               <div className="relative">
                 <Factory className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-muted" />
                 <input
                   type="text"
                   value={industrialUse}
                   onChange={(e) => setIndustrialUse(e.target.value)}
-                  placeholder="e.g., Solvent in paint, Degreaser..."
+                  placeholder={intent === 'replacement' ? "e.g., Termiticide, Solvent, Degreaser..." : "e.g., Theoretical structure study..."}
                   className="w-full bg-industrial-950 border border-zinc-border rounded-xl pl-12 pr-4 py-4 text-white placeholder-zinc-muted focus:outline-none focus:ring-2 focus:ring-accent-emerald/50 focus:border-accent-emerald transition-all font-medium"
                   disabled={isSearching}
+                  required={intent === 'replacement'}
                 />
               </div>
             </div>
@@ -95,15 +119,21 @@ export const Substitutions: React.FC = () => {
             {isSearching ? (
               <>
                 <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                Consulting Molecular Database...
+                Validating Regulatory Invariants...
               </>
             ) : (
               <>
-                Analyze Molecular Structure
+                Run Chemical Intelligence Audit
                 <ArrowRight className="w-5 h-5 ml-3" />
               </>
             )}
           </button>
+          
+          {intent === 'replacement' && (
+            <p className="text-[10px] text-zinc-muted font-medium italic text-center">
+              * The engine will hard-cap scores for PBT candidates and prioritize functional class over molecular geometry.
+            </p>
+          )}
         </form>
       </div>
 
