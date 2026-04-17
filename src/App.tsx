@@ -21,6 +21,7 @@ import { Company } from './pages/Company';
 import { RegulatoryPartners } from './pages/RegulatoryPartners';
 import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
+import { Blog } from './pages/Blog';
 import { Toaster } from 'react-hot-toast';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -61,6 +62,8 @@ export default function App() {
             <Route path="/regulatory-partners" element={<RegulatoryPartners />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<Blog />} />
             
             <Route element={<Layout />}>
               <Route path="/dashboard" element={
