@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Navigate, Link, useLocation } from 'react-router';
 import { useAuth } from '../hooks/useAuth';
-import { Beaker, LayoutDashboard, CreditCard, LogOut, Package, Radar, Zap, QrCode, Code } from 'lucide-react';
+import { Beaker, LayoutDashboard, CreditCard, LogOut, Package, Radar, Zap, QrCode, Code, BookOpen } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { Loading } from './Loading';
@@ -31,6 +31,7 @@ export const Layout: React.FC = () => {
     { name: 'Substitutions', path: '/substitutions', icon: Zap, minTier: 'pro' },
     { name: 'Passports (DPP)', path: '/passports', icon: QrCode, minTier: 'enterprise' },
     { name: 'API Access', path: '/api-access', icon: Code, minTier: 'pro' },
+    { name: 'Blog', path: '/blog', icon: BookOpen },
     { name: 'Pricing', path: '/pricing', icon: CreditCard },
   ];
 
