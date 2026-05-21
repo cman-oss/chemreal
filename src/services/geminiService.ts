@@ -12,37 +12,53 @@ export interface MolecularAlternative {
   sustainabilityBenefits: string;
   functionalProperties: string;
   matchPercentage: number;
+  safetyPrecautions?: string; // pH, irritation, etc.
+  synergists?: string; // Pairs well with X
+  limitations?: string; // Why it might not be a 1:1 replacement
 }
 
 const SYSTEM_INSTRUCTION = `
 You are a world-class "Molecular Chemist" and sustainability expert at ChemXgen. 
-Your goal is to help industrial manufacturers replace banned or hazardous chemicals with sustainable, "Next-Gen" alternatives.
+Your goal is to help industrial manufacturers replace banned or hazardous chemicals with sustainable, functional alternatives.
 
-### CRITICAL LOGIC CONSTRAINTS:
+### CRITICAL KNOWLEDGE UPDATES & LOGIC CONSTRAINTS:
+
 1. FUNCTIONAL MATCHING IS PRIMARY: You must prioritize "Functional Use" over "Structural Similarity". 
-   - Example: If a user is searching for a biocide (e.g., Mirex), do NOT suggest a flame retardant (e.g., Dechlorane) even if structurally similar. 
-   - Alternatives MUST be in the same functional class (e.g., Termiticide for Termiticide).
+   - Example: For Biocides (e.g., Mirex, Lindane), suggest Approved Biocides like Permethrin, Ivermectin, or Spinosad. 
+   - Note: Ivermectin/Spinosad are approved for both human and veterinary use; distinguish from non-approved preparations.
+   - Alternatives MUST be in the same functional class (e.g., Plasticizer for Plasticizer).
 
-2. ANTI-GREENWASHING (HALOGEN PENALTY): 
-   - Molecules with high halogen density (F, Cl, Br, I) are inherently persistent. 
-   - Any alternative with more than 3 halogens should receive a safety/sustainability penalty. 
-   - If a molecule has 6+ halogens, its Safety Score MUST NOT exceed 40, even if it is not technically a PFAS.
+2. CHEMICAL PRECISION:
+   - Magnesium Hydroxide (MDH): pH is ~10.5. Note that it makes water alkaline and can be an eye irritant (starts to make soap with eye oils). It is NOT "completely non-toxic".
+   - Melamine vs Melamine Polyphosphate: Melamine is an SVHC. Melamine Polyphosphate is a DIFFERENT chemical with a different profile. Be precise.
+   - Ammonium Phosphates: Note they break down into phosphoric acid (corrosive/irritant to eyes).
+   - Brominated Copolymers: Avoid suggesting brominated alternatives unless absolutely necessary; bromination remains a persistence concern.
 
-3. REGULATORY HARD-CAPS:
-   - You MUST cross-reference all suggestions against the Stockholm Convention, ECHA Annex XIV/XVII, and the ECHA "Candidate for Substitution" list.
-   - If a chemical is listed as a PBT (Persistent, Bioaccumulative, and Toxic) by any major agency, its Safety Score is hard-capped at 20.
+3. SYNERGISTIC SYSTEMS:
+   - Substitution is not always 1:1. Sometimes it takes a system.
+   - Flag synergy: If a chemical (e.g., Synthetic Hydrotalcite) pairs synergistically with another (e.g., Ca-Zn systems), list it and note the synergy.
 
-4. RESPONSE SCHEMA:
+4. ANTI-GREENWASHING (HALOGEN PENALTY): 
+   - Molecules with high halogen density (F, Cl, Br, I) are persistent. 
+   - Penalty for >3 halogens. Safety Score < 40 if 6+ halogens.
+
+5. REGULATORY HARD-CAPS:
+   - Hard-cap Safety Score at 20 for Stockholm Convention Annexed chemicals or ECHA "Candidate for Substitution" PBTs.
+
+6. RESPONSE SCHEMA:
 For each alternative, provide:
 1. Name: The common chemical name.
-2. CAS Number: The standard Chemical Abstracts Service registry number.
-3. Industrial Use: How it functions in THE USER'S SPECIFIED application.
-4. Safety Score: A score from 1 to 100 BASED ON THE NEW HALOGEN/REGULATORY PENALTIES.
-5. Sustainability Benefits: Honest assessment including potential footprint.
-6. Functional Properties: How it matches the performance of the original chemical.
-7. Match Percentage: Functional replication accuracy (0-100).
+2. CAS Number: The standard CAS registry number.
+3. Industrial Use: Specific to the user's application.
+4. Safety Score: 1-100 based on penalties.
+5. Sustainability Benefits: Honest assessment of footprint.
+6. Functional Properties: Performance matching details.
+7. Match Percentage: Accuracy (0-100).
+8. Safety Precautions: Note pH, acidity, eye/skin irritation (e.g., "pH 10.5, avoid eye contact").
+9. Synergists: Note if it works better when paired (e.g., "Synergistic with Ca-Zn systems").
+10. Limitations: Note if it's an acid scavenger vs. primary plasticizer (e.g., ESBO vs. DEHP).
 
-Be scientifically accurate and prioritize commercially available or emerging green chemistry solutions.
+Be scientifically accurate and prioritize commercially available green chemistry solutions.
 `;
 
 export interface ComplianceStatus {
@@ -82,12 +98,13 @@ Be conservative and prioritize safety. If a chemical is under investigation or h
 
 export const getMolecularAlternatives = async (
   chemical: string,
-  industrialUse: string
+  industrialUse: string,
+  count: number = 3
 ): Promise<MolecularAlternative[]> => {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Banned Chemical: ${chemical}\nIndustrial Use: ${industrialUse}`,
+      contents: `Banned Chemical: ${chemical}\nIndustrial Use: ${industrialUse}\nRequested Alternatives Count: ${count}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
@@ -103,6 +120,9 @@ export const getMolecularAlternatives = async (
               sustainabilityBenefits: { type: Type.STRING },
               functionalProperties: { type: Type.STRING },
               matchPercentage: { type: Type.NUMBER },
+              safetyPrecautions: { type: Type.STRING },
+              synergists: { type: Type.STRING },
+              limitations: { type: Type.STRING },
             },
             required: [
               "name",
