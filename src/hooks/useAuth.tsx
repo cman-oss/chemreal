@@ -20,6 +20,7 @@ interface UserProfile {
   tier?: 'starter' | 'pro' | 'enterprise' | 'none';
   stripeCustomerId?: string;
   createdAt?: string;
+  trialEndsAt?: string;
 }
 
 interface AuthContextType {
@@ -27,9 +28,10 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   signIn: () => Promise<void>;
-  signUp: (email: string, pass: string, companyName: string) => Promise<void>;
+  signUp: (email: string, pass: string, companyName: string, selectTrial?: boolean) => Promise<void>;
   login: (email: string, pass: string) => Promise<void>;
   logOut: () => Promise<void>;
+  activateFreeTrial: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -92,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, pass: string, companyName: string) => {
+  const signUp = async (email: string, pass: string, companyName: string, selectTrial?: boolean) => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, pass);
       const userRef = doc(db, 'users', result.user.uid);
@@ -100,10 +102,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userId: result.user.uid,
         email: email,
         companyName: companyName,
-        subscriptionStatus: 'none',
-        tier: 'none',
+        subscriptionStatus: selectTrial ? 'trialing' : 'none',
+        tier: selectTrial ? 'pro' : 'none',
         createdAt: new Date().toISOString(),
       };
+      if (selectTrial) {
+        newProfile.trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+      }
       try {
         await setDoc(userRef, newProfile);
         setProfile(newProfile);
@@ -133,8 +138,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const activateFreeTrial = async () => {
+    if (!user) throw new Error("Authentication required");
+    const userRef = doc(db, 'users', user.uid);
+    const updatedProfile: UserProfile = {
+      userId: user.uid,
+      email: user.email || '',
+      companyName: profile?.companyName || '',
+      subscriptionStatus: 'trialing' as const,
+      tier: 'pro' as const,
+      createdAt: profile?.createdAt || new Date().toISOString(),
+      trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+    };
+    try {
+      await setDoc(userRef, updatedProfile, { merge: true });
+      setProfile(updatedProfile);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, login, logOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, login, logOut, activateFreeTrial }}>
       {children}
     </AuthContext.Provider>
   );
