@@ -44,7 +44,7 @@ export const Dashboard: React.FC = () => {
     if (!compoundName.trim() || !user) return;
     
     // Check subscription limits
-    if (profile?.subscriptionStatus !== 'active' && analyses.length >= 3) {
+    if (profile?.subscriptionStatus !== 'active' && profile?.subscriptionStatus !== 'trialing' && analyses.length >= 3) {
       alert('Free tier limit reached. Please upgrade to Pro to generate more analyses.');
       return;
     }
@@ -176,7 +176,17 @@ export const Dashboard: React.FC = () => {
           </button>
         </form>
         
-        {profile?.subscriptionStatus !== 'active' && (
+        {profile?.subscriptionStatus === 'trialing' ? (
+          <div className="mt-6 flex items-center justify-between p-4 bg-accent-emerald/5 rounded-xl border border-accent-emerald/20">
+            <p className="text-xs font-bold text-accent-emerald uppercase tracking-widest flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-accent-emerald animate-pulse"></span>
+              Pro Trial Active: <span className="text-white">Unlimited synthesis capability enabled</span>
+            </p>
+            <Link to="/pricing" className="text-[10px] font-black text-white hover:text-accent-emerald uppercase tracking-widest transition-colors">
+              Upgrade subscription to retain tier →
+            </Link>
+          </div>
+        ) : profile?.subscriptionStatus !== 'active' && (
           <div className="mt-6 flex items-center justify-between p-4 bg-industrial-950/50 rounded-xl border border-zinc-border">
             <p className="text-xs font-bold text-zinc-muted uppercase tracking-widest">
               Node Capacity: <span className="text-white">{analyses.length} / 3</span>
