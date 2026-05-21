@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { 
   Beaker, 
@@ -22,6 +22,14 @@ import { Logo } from '../components/Logo';
 export const Landing: React.FC = () => {
   const { user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [trialEmail, setTrialEmail] = React.useState('');
+  const navigate = useNavigate();
+
+  const handleTrialSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!trialEmail) return;
+    navigate(`/login?trial=true&email=${encodeURIComponent(trialEmail)}`);
+  };
 
   const features = [
     {
@@ -362,24 +370,33 @@ export const Landing: React.FC = () => {
           
           <div className="relative z-10 space-y-8">
             <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter leading-none">
-              Ready to Secure Your <br /> Supply Chain?
+              Start Your 14-Day <br /> <span className="text-accent-emerald">Free Pro Trial</span>
             </h2>
             <p className="text-zinc-muted max-w-xl mx-auto font-medium text-lg">
-              Join the world's leading chemical manufacturers and distributors in the transition to digital compliance.
+              Get full access to the AI Substitution Engine, Chemical Compliance Radar, and everything Pro tier has to offer with just your email. No credit card required.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link 
-                to="/login" 
-                className="w-full sm:w-auto bg-accent-emerald text-industrial-950 px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-emerald-400 transition-all emerald-glow"
+            
+            <form onSubmit={handleTrialSubmit} className="max-w-md mx-auto flex flex-col sm:flex-row items-center gap-3">
+              <input 
+                type="email"
+                placeholder="Enter email address..."
+                value={trialEmail}
+                onChange={(e) => setTrialEmail(e.target.value)}
+                required
+                className="w-full bg-industrial-950 border border-zinc-border rounded-xl px-6 py-4 text-white placeholder-zinc-muted focus:outline-none focus:ring-2 focus:ring-accent-emerald/50 focus:border-accent-emerald transition-all font-mono text-sm"
+              />
+              <button 
+                type="submit"
+                className="w-full sm:w-auto bg-accent-emerald text-industrial-950 px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-emerald-400 transition-all emerald-glow shrink-0 whitespace-nowrap"
               >
-                Create Free Account
-              </Link>
-              <Link 
-                to="/pricing" 
-                className="w-full sm:w-auto bg-industrial-900 border border-zinc-border text-white px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-industrial-800 transition-all"
-              >
-                View Enterprise Plans
-              </Link>
+                Initialize Trial
+              </button>
+            </form>
+
+            <div className="pt-4 flex flex-wrap justify-center gap-x-8 gap-y-2 text-[10px] text-zinc-muted uppercase tracking-widest font-bold">
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-accent-emerald" /> 14 Days Free</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-accent-emerald" /> No Credit Card</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-accent-emerald" /> Instant Node Setup</span>
             </div>
           </div>
         </div>
