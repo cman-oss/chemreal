@@ -8,10 +8,17 @@ import { Logo } from '../components/Logo';
 
 export const Login: React.FC = () => {
   const { user, profile, signIn, signUp, login, loading } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
+  
+  // Read trial details from URL params
+  const queryParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const isTrialUrl = queryParams.get('trial') === 'true';
+  const emailParam = queryParams.get('email') || '';
+
+  const [isSignUp, setIsSignUp] = useState(isTrialUrl);
+  const [email, setEmail] = useState(emailParam);
   const [password, setPassword] = useState('');
   const [companyName, setCompanyName] = useState('');
+  const [isTrial, setIsTrial] = useState(true);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,7 +43,7 @@ export const Login: React.FC = () => {
         if (!companyName.trim()) {
           throw new Error('Company name is required');
         }
-        await signUp(email, password, companyName);
+        await signUp(email, password, companyName, isTrial);
       } else {
         await login(email, password);
       }
@@ -104,19 +111,37 @@ export const Login: React.FC = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="space-y-2 overflow-hidden"
+                className="space-y-4 overflow-hidden"
               >
-                <label className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest ml-1">Company Entity</label>
-                <div className="relative">
-                  <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted" />
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest ml-1">Company Entity</label>
+                  <div className="relative">
+                    <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-muted" />
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="w-full bg-industrial-950 border border-zinc-border rounded-xl pl-12 pr-4 py-3 text-white placeholder-zinc-muted focus:outline-none focus:ring-2 focus:ring-accent-emerald/50 focus:border-accent-emerald transition-all font-mono text-sm"
+                      placeholder="Global Chem Corp"
+                      required={isSignUp}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-accent-emerald/5 border border-accent-emerald/20 rounded-2xl">
                   <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full bg-industrial-950 border border-zinc-border rounded-xl pl-12 pr-4 py-3 text-white placeholder-zinc-muted focus:outline-none focus:ring-2 focus:ring-accent-emerald/50 focus:border-accent-emerald transition-all font-mono text-sm"
-                    placeholder="Global Chem Corp"
-                    required={isSignUp}
+                    type="checkbox"
+                    id="isTrial"
+                    checked={isTrial}
+                    onChange={(e) => setIsTrial(e.target.checked)}
+                    className="w-4 h-4 rounded text-accent-emerald bg-industrial-950 border-zinc-border focus:ring-accent-emerald/50 cursor-pointer"
                   />
+                  <div>
+                    <label htmlFor="isTrial" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer select-none">
+                      Activate 14-Day Free Pro Trial
+                    </label>
+                    <p className="text-[9px] text-zinc-muted leading-tight mt-0.5">No credit card or payments required.</p>
+                  </div>
                 </div>
               </motion.div>
             )}
