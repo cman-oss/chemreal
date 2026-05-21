@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { getMolecularAlternatives, MolecularAlternative } from '../services/geminiService';
-import { Search, ArrowRight, Zap, Beaker, CheckCircle2, ShieldAlert, Leaf, Factory, Info, Loader2 } from 'lucide-react';
+import { Search, ArrowRight, Zap, Beaker, CheckCircle2, ShieldAlert, Leaf, Factory, Info, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../lib/utils';
@@ -11,6 +11,7 @@ export const Substitutions: React.FC = () => {
   const [chemicalQuery, setChemicalQuery] = useState('');
   const [industrialUse, setIndustrialUse] = useState('');
   const [intent, setIntent] = useState<'replacement' | 'research'>('replacement');
+  const [resultCount, setResultCount] = useState(3);
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<MolecularAlternative[] | null>(null);
 
@@ -32,7 +33,7 @@ export const Substitutions: React.FC = () => {
       // Prioritize application for replacement intent
       const contextPrefix = intent === 'replacement' ? "URGENT REPLACEMENT FOR: " : "RESEARCH STUDY ON: ";
       const use = `${contextPrefix}${industrialUse.trim() || "General Industrial Application"}`;
-      const options = await getMolecularAlternatives(chemicalQuery, use);
+      const options = await getMolecularAlternatives(chemicalQuery, use, resultCount);
       setResults(options);
     } catch (error) {
       console.error("Failed to find substitutions:", error);
@@ -55,27 +56,48 @@ export const Substitutions: React.FC = () => {
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-emerald to-transparent opacity-50"></div>
         
         <form onSubmit={handleSearch} className="space-y-8 relative z-10">
-          <div className="flex gap-4 p-1 bg-industrial-950 rounded-xl border border-zinc-border w-fit">
-            <button
-              type="button"
-              onClick={() => setIntent('replacement')}
-              className={cn(
-                "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all",
-                intent === 'replacement' ? "bg-accent-emerald text-industrial-950 emerald-glow" : "text-zinc-muted hover:text-white"
-              )}
-            >
-              Direct Replacement
-            </button>
-            <button
-              type="button"
-              onClick={() => setIntent('research')}
-              className={cn(
-                "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all",
-                intent === 'research' ? "bg-blue-500 text-industrial-950 shadow-[0_0_20px_rgba(59,130,246,0.3)]" : "text-zinc-muted hover:text-white"
-              )}
-            >
-              Academic Research
-            </button>
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex gap-4 p-1 bg-industrial-950 rounded-xl border border-zinc-border w-fit">
+              <button
+                type="button"
+                onClick={() => setIntent('replacement')}
+                className={cn(
+                  "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all",
+                  intent === 'replacement' ? "bg-accent-emerald text-industrial-950 emerald-glow" : "text-zinc-muted hover:text-white"
+                )}
+              >
+                Direct Replacement
+              </button>
+              <button
+                type="button"
+                onClick={() => setIntent('research')}
+                className={cn(
+                  "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all",
+                  intent === 'research' ? "bg-blue-500 text-industrial-950 shadow-[0_0_20px_rgba(59,130,246,0.3)]" : "text-zinc-muted hover:text-white"
+                )}
+              >
+                Academic Research
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold text-zinc-muted uppercase tracking-widest whitespace-nowrap">Result Count:</span>
+              <div className="flex gap-2 p-1 bg-industrial-950 rounded-xl border border-zinc-border w-fit">
+                {[3, 5, 10].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => setResultCount(num)}
+                    className={cn(
+                      "w-10 h-8 rounded-lg text-xs font-black transition-all",
+                      resultCount === num ? "bg-zinc-700 text-white" : "text-zinc-muted hover:text-white"
+                    )}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -153,18 +175,14 @@ export const Substitutions: React.FC = () => {
               </div>
             </div>
             
-            <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6">
-              {Array.from({ length: 3 }).map((_, i) => (
+            <div className="grid lg:grid-cols-2 gap-6">
+              {Array.from({ length: resultCount }).map((_, i) => (
                 <div key={i} className="bg-industrial-900 border border-zinc-border rounded-3xl p-8 flex flex-col gap-6">
                   <div className="flex justify-between">
                     <Skeleton className="h-8 w-3/4 rounded-md" />
                     <Skeleton className="h-6 w-16 rounded-md" />
                   </div>
-                  <Skeleton className="h-24 w-full rounded-2xl" />
-                  <div className="space-y-4">
-                    <Skeleton className="h-12 w-full rounded-xl" />
-                    <Skeleton className="h-12 w-full rounded-xl" />
-                  </div>
+                  <Skeleton className="h-48 w-full rounded-2xl" />
                   <Skeleton className="h-12 w-full rounded-xl mt-auto" />
                 </div>
               ))}
@@ -189,67 +207,109 @@ export const Substitutions: React.FC = () => {
               </div>
             </div>
             
-            <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-6">
               {results.map((option, index) => (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   key={index}
-                  className="bg-industrial-900 border border-zinc-border rounded-3xl p-8 hover:border-accent-emerald/50 transition-all group relative overflow-hidden flex flex-col"
+                  className="bg-industrial-900 border border-zinc-border rounded-3xl p-8 hover:border-accent-emerald/50 transition-all group relative overflow-hidden flex flex-col shadow-xl"
                 >
                   <div className="absolute top-0 right-0 bg-accent-emerald/10 text-accent-emerald text-[10px] font-black px-4 py-2 rounded-bl-2xl border-b border-l border-accent-emerald/20 uppercase tracking-widest">
                     {option.matchPercentage}% Match
                   </div>
                   
-                  <div className="mb-6">
-                    <h4 className="text-2xl font-black text-white mb-1 pr-20 leading-tight uppercase tracking-tight">{option.name}</h4>
-                    <p className="text-xs font-mono text-zinc-muted">CAS: {option.casNumber}</p>
+                  <div className="mb-6 flex items-start gap-4 pr-16">
+                    <div className="bg-industrial-950 p-4 rounded-2xl border border-zinc-border group-hover:border-accent-emerald/20 transition-colors">
+                      <Beaker className="w-6 h-6 text-accent-emerald" />
+                    </div>
+                    <div>
+                      <h4 className="text-2xl font-black text-white leading-tight uppercase tracking-tight">{option.name}</h4>
+                      <p className="text-xs font-mono text-zinc-muted mt-1 leading-none uppercase tracking-widest">CAS {option.casNumber}</p>
+                    </div>
                   </div>
                   
-                  <div className="space-y-5 flex-grow">
-                    <div className="bg-industrial-950/50 rounded-2xl p-4 border border-zinc-border/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <ShieldAlert className="w-4 h-4 text-accent-emerald" />
-                        <span className="text-[10px] font-black text-white uppercase tracking-widest">Safety Score</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex-1 h-2 bg-industrial-800 rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: `${option.safetyScore}%` }}
-                            transition={{ duration: 1, delay: 0.5 }}
-                            className={cn(
-                              "h-full rounded-full",
-                              option.safetyScore > 80 ? "bg-accent-emerald" : 
-                              option.safetyScore > 50 ? "bg-amber-500" : "bg-red-500"
-                            )}
-                          />
+                  <div className="space-y-6 flex-grow">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-industrial-950/50 rounded-2xl p-4 border border-zinc-border/50">
+                        <div className="flex items-center gap-2 mb-3">
+                          <ShieldAlert className="w-4 h-4 text-accent-emerald" />
+                          <span className="text-[9px] font-black text-white uppercase tracking-widest">Safety Score</span>
                         </div>
-                        <span className="text-lg font-black text-white font-mono">{option.safetyScore}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-2 bg-industrial-800 rounded-full overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${option.safetyScore}%` }}
+                              transition={{ duration: 1, delay: 0.5 }}
+                              className={cn(
+                                "h-full rounded-full",
+                                option.safetyScore > 80 ? "bg-accent-emerald" : 
+                                option.safetyScore > 50 ? "bg-amber-500" : "bg-red-500"
+                              )}
+                            />
+                          </div>
+                          <span className="text-lg font-black text-white font-mono">{option.safetyScore}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-industrial-950/50 rounded-2xl p-4 border border-zinc-border/50">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Leaf className="w-4 h-4 text-emerald-400" />
+                          <span className="text-[9px] font-black text-white uppercase tracking-widest">Industrial Use</span>
+                        </div>
+                        <p className="text-[10px] text-zinc-muted font-bold uppercase truncate">{option.industrialUse}</p>
                       </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <Leaf className="w-4 h-4 text-accent-emerald mt-1 shrink-0" />
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
                         <div>
-                          <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest block mb-1">Sustainability</span>
-                          <p className="text-xs text-white leading-relaxed font-medium">{option.sustainabilityBenefits}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <Info className="w-4 h-4 text-blue-400 mt-1 shrink-0" />
-                        <div>
-                          <span className="text-[10px] font-black text-zinc-muted uppercase tracking-widest block mb-1">Functional Match</span>
+                          <span className="text-[9px] font-black text-zinc-muted uppercase tracking-widest block mb-2">Functional performance</span>
                           <p className="text-xs text-white leading-relaxed font-medium">{option.functionalProperties}</p>
                         </div>
+                        
+                        {option.synergists && (
+                          <div className="p-3 bg-accent-emerald/5 border border-accent-emerald/20 rounded-xl">
+                            <span className="text-[9px] font-black text-accent-emerald uppercase tracking-widest block mb-1 flex items-center gap-1.5">
+                              <Zap className="w-3 h-3" /> Synergistic Effects
+                            </span>
+                            <p className="text-[10px] text-zinc-200 font-bold leading-normal">{option.synergists}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <span className="text-[9px] font-black text-zinc-muted uppercase tracking-widest block mb-2">Sustainability profile</span>
+                          <p className="text-xs text-white leading-relaxed font-medium">{option.sustainabilityBenefits}</p>
+                        </div>
+
+                        {option.safetyPrecautions && (
+                          <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+                            <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest block mb-1 flex items-center gap-1.5">
+                              <AlertCircle className="w-3 h-3" /> Safety Instructions
+                            </span>
+                            <p className="text-[10px] text-zinc-200 font-bold leading-normal">{option.safetyPrecautions}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
+
+                    {option.limitations && (
+                      <div className="flex items-start gap-2 pt-2 border-t border-zinc-border/30">
+                        <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest block">Implementation Notes</span>
+                          <p className="text-[10px] text-zinc-400 font-medium italic mt-0.5 leading-normal">{option.limitations}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
-                  <button className="w-full mt-8 bg-industrial-950 hover:bg-industrial-800 text-white text-xs font-black py-4 rounded-xl transition-all border border-zinc-border uppercase tracking-widest shadow-lg">
-                    Request Technical Data
+                  <button className="w-full mt-8 bg-industrial-950 hover:bg-industrial-800 text-white text-[10px] font-black py-4 rounded-xl transition-all border border-zinc-border uppercase tracking-[0.2em] shadow-lg group-hover:border-accent-emerald/30 group-hover:text-accent-emerald focus:outline-none focus:ring-2 focus:ring-accent-emerald/50">
+                    View Technical Dossier
                   </button>
                 </motion.div>
               ))}
