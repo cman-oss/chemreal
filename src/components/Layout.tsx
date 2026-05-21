@@ -16,6 +16,15 @@ export const Layout: React.FC = () => {
   const { user, profile, loading, logOut } = useAuth();
   const location = useLocation();
 
+  let trialDaysRemaining: number | null = null;
+  if (profile?.subscriptionStatus === 'trialing') {
+    const endsAt = profile.trialEndsAt 
+      ? new Date(profile.trialEndsAt) 
+      : new Date(new Date(profile.createdAt || Date.now()).getTime() + 14 * 24 * 60 * 60 * 1000);
+    const diffTime = endsAt.getTime() - Date.now();
+    trialDaysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+  }
+
   if (loading) {
     return <Loading />;
   }
@@ -90,9 +99,16 @@ export const Layout: React.FC = () => {
               <span className="text-sm font-bold text-white truncate">
                 {profile?.companyName || user.displayName || user.email?.split('@')[0]}
               </span>
-              <span className="text-[10px] text-accent-emerald font-mono uppercase tracking-tighter">
-                {profile?.tier ? `${profile.tier} node` : 'Basic Node'}
-              </span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] text-accent-emerald font-mono uppercase tracking-tighter leading-none">
+                  {profile?.tier ? `${profile.tier} node` : 'Basic Node'}
+                </span>
+                {profile?.subscriptionStatus === 'trialing' && trialDaysRemaining !== null && (
+                  <span className="text-[9px] text-zinc-400 font-bold tracking-wider uppercase mt-0.5">
+                    {trialDaysRemaining}d trial left
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <button
