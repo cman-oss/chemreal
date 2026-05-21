@@ -6,9 +6,10 @@ import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router';
 
 export const Pricing: React.FC = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, activateFreeTrial } = useAuth();
   const navigate = useNavigate();
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
+  const [trialLoading, setTrialLoading] = useState(false);
 
   // Use the price IDs from environment variables, fallback to placeholders for UI testing
   const STRIPE_PRICE_ID_STARTER = import.meta.env.VITE_STRIPE_STARTER_PRICE_ID || 'price_starter_123';
@@ -33,6 +34,25 @@ export const Pricing: React.FC = () => {
     }
   };
 
+  const handleActivateTrial = async () => {
+    if (!user) {
+      navigate('/login?trial=true');
+      return;
+    }
+    setTrialLoading(true);
+    try {
+      if (activateFreeTrial) {
+        await activateFreeTrial();
+        navigate('/dashboard');
+      }
+    } catch (e: any) {
+      console.error("Failed to activate trial:", e);
+      alert("Activation failed: " + e?.message || "Internal Error");
+    } finally {
+      setTrialLoading(false);
+    }
+  };
+
   const currentTier = profile?.tier || 'none';
   const hasPublishableKey = !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
@@ -45,11 +65,11 @@ export const Pricing: React.FC = () => {
           </Link>
         )}
         
-        <div className="text-center mb-20">
+        <div className="text-center mb-16">
           {user && currentTier === 'none' && (
             <div className="mb-8 inline-block bg-accent-emerald/10 border border-accent-emerald/20 px-6 py-3 rounded-2xl">
               <p className="text-accent-emerald font-black uppercase tracking-widest text-xs">
-                Welcome, {user.displayName || user.email}! Please select a plan to activate your node.
+                Welcome, {user.displayName || user.email}! Please select a plan to activate your node, or launch a free trial below.
               </p>
             </div>
           )}
@@ -73,6 +93,30 @@ export const Pricing: React.FC = () => {
             )}
           </div>
         </div>
+
+        {currentTier === 'none' && (
+          <div className="mb-12 max-w-5xl mx-auto bg-gradient-to-r from-accent-emerald/20 via-industrial-900 to-accent-emerald/5 rounded-[2.5rem] p-8 md:p-12 border border-accent-emerald/30 text-left flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-accent-emerald/10 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+            <div className="relative z-10 space-y-3">
+              <span className="bg-accent-emerald/20 text-accent-emerald text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-accent-emerald/30">Free Access Offer</span>
+              <h2 className="text-3xl font-black text-white uppercase tracking-tight leading-none mt-2">Evaluate CHEMXGEN Pro Free for 14 Days</h2>
+              <p className="text-zinc-300 max-w-2xl text-sm font-medium leading-relaxed">
+                Unlock immediate developer access to the industry-leading AI Substitution Engine, Chemical Compliance Radar, and advanced analysis tools. Absolutely no credit card or payments required.
+              </p>
+            </div>
+            <button
+              onClick={handleActivateTrial}
+              disabled={trialLoading}
+              className="relative z-10 bg-accent-emerald hover:bg-emerald-400 text-industrial-950 font-black uppercase tracking-[0.2em] text-xs px-8 py-5 rounded-2xl shrink-0 whitespace-nowrap transition-all shadow-lg active:scale-95 flex items-center justify-center min-w-[200px]"
+            >
+              {trialLoading ? (
+                <div className="w-5 h-5 border-2 border-industrial-950/20 border-t-industrial-950 rounded-full animate-spin" />
+              ) : (
+                'Start 14-Day Free Trial'
+              )}
+            </button>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Starter Tier */}
